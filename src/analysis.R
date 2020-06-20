@@ -1,3 +1,5 @@
+library(purrr)
+
 dt_root <- read.csv("data/data_t0.tsv", sep = "\t", header = TRUE, encoding = "UTF-8", na.strings = "")
 features_df <- read.csv("data/labels_features_t0.tsv", sep = "\t", header = TRUE, encoding = "UTF-8")
 
@@ -72,7 +74,8 @@ colnames(dt_new) <- features_df$Feature_label[other_vars]
 
 dt_new <- data.frame(dt_new, sf_new_dataset)
 View(dt_new)
-d3heatmap::d3heatmap(sf_new_dataset[complete.cases(sf_new_dataset), ], colors = "Reds")
+
+#d3heatmap::d3heatmap(sf_new_dataset[complete.cases(sf_new_dataset), ], colors = "Reds")
 
 library(lubridate)
 timestamp <- mdy_hms(dt_new$Timestamp)
@@ -98,4 +101,22 @@ p <- ggplot(data=dt_new_by_date %>% filter(date_record >= "2020-06-12"),
 
 p
 
-save.image(file = "session/analysis_17062020")
+#save.image(file = "session/analysis_17062020")
+
+dt_new$Problemas_psiquiatricos <- as.factor(dt_new$Problemas_psiquiatricos)
+sort(table(dt_new$Problemas_psiquiatricos))
+
+GetTranstornosDummy <- function(x){
+  require(purrr)
+  transtornos <- c("Nenhum", "Transtornos de ansiedade (ex. pânico", "Depressão", "Outros", "Transtorno bipolar", "Esquizofrenia")
+  x_split <- strsplit(x=as.character(x), split = ",")
+  df <- as.data.frame(t(as.matrix(ifelse(transtornos %in% x_split, 1, 0))))
+  
+  colnames(df) <- c("Nenhum", "Transtornos de ansiedade", "Depressao", "Outros", "Transtorno bipolar", "Esquizofrenia")
+  df
+}
+
+library(purrr)
+library(dplyr)
+
+transtornos_df <- bind_rows(map(dt_new$Problemas_psiquiatricos, GetTranstornosDummy))
