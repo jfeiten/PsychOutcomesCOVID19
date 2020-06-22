@@ -120,3 +120,60 @@ library(purrr)
 library(dplyr)
 
 transtornos_df <- bind_rows(map(dt_new$Problemas_psiquiatricos, GetTranstornosDummy))
+
+colnames(dt_new)
+
+#Opcoes do formulario ----
+#"Yoga, meditação", "Cozinhar", "Fumar", "Atividade  física", "Beber álcool", 
+#                      "Ver TV (filmes, séries, novelas)", "Pintar, escrever, escutar música",
+#                       "Ler notícias sobre COVID-19", "Navegar nas redes sociais (Facebook, Twitter, Instagram",
+#                       "Trabalhar", "Fumar outras substâncias como maconha", "Tomar calmantes", "Não consigo me distrair"
+
+GetAtividadesDummy <- function(x){
+  require(purrr)
+  atividades_opcoes <- c("Yoga", "Cozinhar", "Fumar", "Atividade", "Beber", 
+                         "Ver", "Pintar",
+                         "Ler", "Navegar",
+                         "Trabalhar", "Fumar", "Tomar", "consigo")
+  
+  
+  x_split <- unlist(strsplit(x=as.character(x), split = ","))
+  x_split <- unlist(strsplit(x=x_split, split = " "))
+  
+  atv_lgl <- atividades_opcoes %in% x_split
+  
+  df <- as.data.frame(t(as.matrix(ifelse(atv_lgl, 1, 0))))
+  
+  colnames(df) <- c("Yoga_med", "Cozinhar", "Fumar", "Atividade_fisica", "Beber_alcool", 
+                    "Ver_tv", "Pintar",
+                    "Noticias_covid19", "Navegar_redes_soc",
+                    "Trabalhar", "Fumar_maconha", "Tomar_calmantes", "Nao_distracao")
+  df
+}
+
+atividades_df <- bind_rows(map(dt_new$Atividade_distracao, GetAtividadesDummy))
+
+hist(apply(atividades_df, 1, sum))
+sort(table(apply(atividades_df, 1, sum)), decreasing = TRUE)
+apply(atividades_df, 2, sum)
+
+View(as.data.frame(sort(table(dt_new$Atividade_distracao), decreasing = TRUE)))
+
+View(atividades_df)
+
+
+atividades_opcoes <- c("Yoga", "Cozinhar", "Fumar", "Atividade  física", "Beber álcool", 
+                                             "Ver TV (filmes", "Pintar",
+                                              "Ler notícias sobre COVID-19", "Navegar nas redes sociais (Facebook",
+                                              "Trabalhar", "Fumar outras substâncias como maconha", "Tomar calmantes", "Não consigo me distrair")
+
+atividades <- as.factor(dt_new$Atividade_distracao)
+atividades_split <- unlist(strsplit(x=levels(atividades), split = ","))
+atividades_split <- unlist(strsplit(x=atividades_split, split = " "))
+atividades_split <- tolower(atividades_split)
+
+atividades_split
+
+sort(table(atividades_split), decreasing = TRUE)
+
+
